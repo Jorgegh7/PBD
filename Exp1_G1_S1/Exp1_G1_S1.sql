@@ -4,10 +4,13 @@
 
 SET serveroutput on; 
 
+-- Variable BIND
+DEFINE b_numrun_usuario = 22558061;  
+
 -- BLOQUE PL/SQL 
 
 DECLARE
-v_numrun_usuario1 NUMBER := 22558061;
+v_numrun_usuario1 NUMBER(8):= &b_numrun_usuario;
 
 --Variables para almacenar los valores que obtenemos del select
 --Se obtienen los tipos de forma %TYPE desde la columna de la tabla cliente_todosuma
@@ -110,12 +113,15 @@ WHERE 1=0;
 --Insertamos valor de pueba
 --INSERT INTO cuota_credito_cliente_prueba (nro_solic_credito, nro_cuota, fecha_venc_cuota, valor_cuota) VALUES(3004, 36 , '01/12/28', 105555); 
 
+-- Variables BIND
+DEFINE b_num_solic_credito = 2001; 
 
+DEFINE b_cantidad_cuotas_postergar = 2;   
 DECLARE
 
 --Variables caso planteado: Nº Solicitud credito y Cantidad de Cuotas 
-v_num_solic_credito NUMBER(10) := 2001;
-v_cantidad_cuotas_postergar NUMBER(1) := 2;  
+v_num_solic_credito NUMBER(10) := &b_num_solic_credito;
+v_cantidad_cuotas_postergar NUMBER(1) := &b_cantidad_cuotas_postergar;  
 
 v_nro_ultima_cuota_cred NUMBER(3);
 v_num_cliente NUMBER(3);
