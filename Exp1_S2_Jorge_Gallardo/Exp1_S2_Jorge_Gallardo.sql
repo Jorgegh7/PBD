@@ -5,6 +5,10 @@
 -- SET QUE PERMITE EL OUTPUT DEL BLOQUE PL/SQL
 SET serveroutput on; 
 
+-- TRUNCATE PARA LA EJECUCION DINAMICA SOBRE LA TABLA USUARIO_CLAVE
+TRUNCATE TABLE USUARIO_CLAVE;
+SAVEPOINT sp_usuario_clave; 
+
 -- VARIABLE BIND USADA PARA LA FECHA DE SISTEMA BASE DE DATOS
 VAR b_fecha_proc DATE
 EXEC :b_fecha_proc := SYSDATE;
@@ -49,16 +53,13 @@ v_numeros_fecha NUMBER;
 v_fecha_contrato DATE;
 
 -- Variable uso fecha de proceso donde se utiliza variable BIND
-v_fecha_proceso DATE := SYSDATE;
+v_fecha_proceso DATE := :b_fecha_proc; --SYSDATE
 
 -- VARIABLES QUE ALMACENAN NOMBRE USUARIO Y CLAVE USUARIO
 v_nombre_usuario usuario_clave.nombre_usuario%TYPE; 
 v_clave_usuario usuario_clave.clave_usuario%TYPE;
 
 BEGIN
-    
-    -- TRUNCATE PARA LA EJECUCION DINAMICA SOBRE LA TABLA USUARIO_CLAVE
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE USUARIO_CLAVE';
     
     -- ALMACENA EL TOTAL DE EMPLEADOS EN LA VARIABLE V_TOTAL_EMP --> USO FOR
     SELECT 
@@ -201,6 +202,10 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('TOTAL EMPLEADOS: ' || v_total_emp);
         DBMS_OUTPUT.PUT_LINE('CONFIRMACION: Se insertaron ' || v_contador || ' registros exitosamente');
         COMMIT;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('ERROR DE EJECUCION');
+        DBMS_OUTPUT.PUT_LINE('');
+        ROLLBACK TO SAVEPOINT sp_usuario_clave; 
     END IF;
     
 END; 
