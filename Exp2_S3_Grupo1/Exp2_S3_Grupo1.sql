@@ -4,8 +4,10 @@ SET serveroutput on;
 -- EXP 2 SEMANA 3 : CASO 1
 --======================================
 
-
 SAVEPOINT sp_pago_moroso; 
+
+VAR b_fecha_proceso DATE;
+EXEC :b_fecha_proceso := SYSDATE;  
 
 DECLARE
 
@@ -29,7 +31,7 @@ DECLARE
         INNER JOIN pago_atencion pa ON pa.ate_id = a.ate_id
         INNER JOIN especialidad e ON e.esp_id = a.esp_id
         WHERE pa.fecha_pago > pa.fecha_venc_pago 
-            AND EXTRACT(YEAR FROM pa.fecha_pago) = EXTRACT(YEAR FROM SYSDATE) - 1
+            AND EXTRACT(YEAR FROM pa.fecha_pago) = EXTRACT(YEAR FROM :b_fecha_proceso) - 1
         ORDER BY pa.fecha_venc_pago, p.apaterno;
     
     -- UTILIZACION DE REGISTRO PARA ENCAPSULAR UN CONJUNTO DE VARIABLES 
@@ -49,7 +51,9 @@ DECLARE
     
     -- DECLARACIÓN VARRAY
     TYPE varray_multas IS VARRAY(50) OF NUMBER; 
-    va_multas varray_multas := varray_multas(); 
+    va_multas varray_multas := varray_multas();
+    
+    
 
 BEGIN 
     
@@ -165,6 +169,22 @@ END;
 
 SAVEPOINT sp_medico_servicio_comunidad; 
 
+--ELIMINACION Y CREACION DE TABLA medico_servicio_comunidad
+DROP TABLE MEDICO_SERVICIO_COMUNIDAD; 
+
+CREATE TABLE MEDICO_SERVICIO_COMUNIDAD
+(id_med_scomun NUMBER(2) GENERATED ALWAYS AS IDENTITY MINVALUE 1 
+MAXVALUE 9999999999999999999999999999
+INCREMENT BY 1 START WITH 1
+CONSTRAINT PK_MED_SERV_COMUNIDAD PRIMARY KEY,
+ unidad VARCHAR2(50) NOT NULL,
+ run_medico VARCHAR2(15) NOT NULL,
+ nombre_medico VARCHAR2(50) NOT NULL,
+ correo_institucional VARCHAR2(25) NOT NULL,
+ total_aten_medicas NUMBER(2) NOT NULL,
+ destinacion VARCHAR2(50) NOT NULL);
+
+
 -- VARIABLE BIND PARA ALMACENAR EL VALOR DE ATENCIONES MAXIMAS
 VAR b_maximo_atenciones NUMBER; 
 EXEC :b_maximo_atenciones := 0; 
@@ -176,7 +196,7 @@ DECLARE
             COUNT(a.ate_id)
         FROM medico m
         LEFT JOIN atencion a ON m.med_run = a.med_run
-            AND EXTRACT(YEAR FROM a.fecha_atencion) = EXTRACT(YEAR FROM SYSDATE) - 1
+            AND EXTRACT(YEAR FROM a.fecha_atencion) = EXTRACT(YEAR FROM :b_fecha_proceso) - 1
         GROUP BY 
             m.med_run;           
     v_maximo_atenciones NUMBER; 
@@ -220,7 +240,7 @@ DECLARE
         FROM medico m
         INNER JOIN unidad u ON m.uni_id = u.uni_id
         LEFT JOIN atencion a ON a.med_run = m.med_run
-            AND EXTRACT(YEAR FROM a.fecha_atencion) = EXTRACT(YEAR FROM SYSDATE) - 1
+            AND EXTRACT(YEAR FROM a.fecha_atencion) = EXTRACT(YEAR FROM :b_fecha_proceso) - 1
         GROUP BY
             u.nombre,
             u.uni_id,
@@ -366,10 +386,4 @@ BEGIN
     
 END; 
 /
-
-
-
-
-
-
 
